@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Linq;
 using DG.Tweening;
+using UnityEngine.UI;
 public class CardMovementScr : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     Camera MainCamera;
@@ -43,45 +44,79 @@ public class CardMovementScr : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     public void OnEndDrag(PointerEventData eventData)
     {
         if (!IsDraggable)
-            return;
-        
+        {
+             return;
+            //break;
+        }
         if(DefaultParent.GetComponent<DropPlaceScript>().Type == FieldType.SELF_FIELD)
         {
-            //Destroy(GameManager.EnemyFieldCards);
-            for(int i = 0; i < GameManager.PlayerFieldCards.Count; i++)
-            {   
-                if(GameManager.PlayerFieldCards[i].SelfCard.TimeCounters == 0)
-                {
-                    if(GameManager.EnemyFieldCards.ElementAtOrDefault(i) != null)
-                    {
-                        GameManager.CardsFight(GameManager.PlayerFieldCards[i], GameManager.EnemyFieldCards[i]);
-                    }
-                    else
-                    {
-                        GameManager.DamageHero(GameManager.PlayerFieldCards[i], GameManager.EnemyH);
-                    }
-                }
+            StartCoroutine(GameManager.PlayerTurn(GameManager.PlayerHandCards)); 
+        //     for(int i = 0; i < GameManager.PlayerFieldCards.Count; i++)
+        //     {   
+        //         if(GameManager.PlayerFieldCards[i].SelfCard.TimeCounters == 0)
+        //         {
+        //             if(GameManager.EnemyFieldCards.ElementAtOrDefault(i) != null)
+        //             {
+        //                 GameManager.PlayerFieldCards[i].GetComponent<CardMovementScr>().MoveToTarget(GameManager.EnemyFieldCards[i].transform);
+        //                 //yield return new WaitForSeconds(.75f);
+        //                 GameManager.CardsFight(GameManager.PlayerFieldCards[i], GameManager.EnemyFieldCards[i]);
+        //             }
+        //             else
+        //             {
+        //                 GameManager.PlayerFieldCards[i].GetComponent<CardMovementScr>().MoveToTarget(GameManager.EnemyH.transform);
+        //                 GameManager.DamageHero(GameManager.PlayerFieldCards[i], GameManager.EnemyH);
+        //             }
+        //         }
                 
-            }
-            
-            foreach(var card in GameManager.PlayerFieldCards)
-            {
-                if(card.SelfCard.TimeCounters > 0)
-                {
-                    card.SelfCard.TimeCounters--;
-                }
-                card.RefreshData();
-            }
-            GameManager.ChangeTurn();
+        //     }
+                
+        //     foreach(var card in GameManager.PlayerFieldCards)
+        //     {
+        //         if(card.SelfCard.TimeCounters > 0)
+        //         {
+        //             card.SelfCard.TimeCounters--;
+        //         }
+        //         card.RefreshData();
+        //     }
+        //     GameManager.DestroyCards(GameManager.EnemyFieldCards);
+        //     GameManager.ChangeTurn();
         }
         
 
         transform.SetParent(DefaultParent);
         GetComponent<CanvasGroup>().blocksRaycasts = true;
     }
+
     public void MoveToField(Transform field)
     {
+        //transform.SetParent(GameObject.Find("Canvas").transform);
         transform.DOMove(field.position, .5f);
+    }
+
+    public void MoveToTarget(Transform target)
+    {
+        //transform.SetParent(GameObject.Find("Canvas").transform);
+        StartCoroutine(MoveToTargetCor(target));
+    }
+
+    IEnumerator MoveToTargetCor(Transform target)
+    {
+        Vector3 pos = transform.position;
+        // Transform parent = transform.parent;
+        // int index = transform.GetSiblingIndex();
+
+        // transform.parent.GetComponent<HorizontalLayoutGroup>().enabled = false;
+
+        // transform.SetParent(GameObject.Find("Canvas").transform);
+
+        transform.DOMove(target.position, .25f);
+        yield return new WaitForSeconds(.25f);
+
+        transform.DOMove(pos, .25f);
+        yield return new WaitForSeconds(.25f);
+
+        // transform.SetParent(parent);
+        // transform.SetSiblingIndex(index);
     }
 
 }

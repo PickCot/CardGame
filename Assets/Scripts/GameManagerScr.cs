@@ -44,29 +44,57 @@ public class GameManagerScr : MonoBehaviour
     public GameObject WinScreen;
     public TextMeshProUGUI ResultTxt;
 
+    //public Animation anim; //
+
     public bool IsPlayerTurn{
         get{
             return Turn % 2 == 0;
         }
     }
-    void Awake() //
+    void Awake()
     {
+        //anim = GetComponent<Animation>(); //
         GameManager = FindObjectOfType<GameManagerScr>();
     }
 
     void Start()
     {
-        Turn = 0;
+        StartGame();
+    }
+
+    public void RestartGame()
+    {
+        foreach(var card in PlayerFieldCards)
+            Destroy(card.gameObject);
+        foreach(var card in PlayerHandCards)
+            Destroy(card.gameObject);
+        foreach(var card in EnemyFieldCards)
+            Destroy(card.gameObject);
+        foreach(var card in EnemyHandCards)
+            Destroy(card.gameObject);
+
+        PlayerFieldCards.Clear();
+        PlayerHandCards.Clear();
+        EnemyHandCards.Clear();
+        EnemyFieldCards.Clear();
+
+        StartGame();
+    }
+    
+    void StartGame()
+    {
+        Turn = new System.Random().Next( -1, 1);
         PlayerH.HeroHp = 10;
         EnemyH.HeroHp = 10;
         PlayerH.Type = Hero.HeroType.PLAYER;
         EnemyH.Type = Hero.HeroType.ENEMY;
 
         CurrentGame = new Game();
-
+        WinScreen.SetActive(false);
+        ShowHP();
         GiveHandCards(CurrentGame.EnemyDeck, EnemyHand);
         GiveHandCards(CurrentGame.PlayerDeck, PlayerHand); 
-
+        ChangeTurn();
     }
 
     void GiveHandCards(List<Card> deck, Transform hand)
@@ -95,10 +123,8 @@ public class GameManagerScr : MonoBehaviour
         deck.RemoveAt(0);
     }
 
-    // void EnemyTurn(List<CardInfoScr> cards)
     IEnumerator EnemyTurn(List<CardInfoScr> cards)
-    {        
-        // DestroyCards(GameManager.PlayerFieldCards);  
+    {         
         for(int i = 0; i < 1; i++)
         {
             yield return new WaitForSeconds(1);
@@ -107,32 +133,75 @@ public class GameManagerScr : MonoBehaviour
             }
 
             cards[0].GetComponent<CardMovementScr>().MoveToField(EnemyField);
-            yield return new WaitForSeconds(.51f);
+            yield return new WaitForSeconds(.75f);
 
             cards[0].ShowCardInfo(cards[0].SelfCard);
             cards[0].transform.SetParent(EnemyField);
 
             EnemyFieldCards.Add(cards[0]);
             EnemyHandCards.Remove(cards[0]);
+            yield return new WaitForSeconds(.50f);
         }
             for(int i = 0; i < EnemyFieldCards.Count; i++)
             {
                 if(EnemyFieldCards[i].SelfCard.TimeCounters == 0)
                 {
+
                     if(PlayerFieldCards.ElementAtOrDefault(i) != null)
                     {
-                     CardsFight(EnemyFieldCards[i], PlayerFieldCards[i]);
+                        EnemyFieldCards[i].GetComponent<CardMovementScr>().MoveToTarget(PlayerFieldCards[i].transform);
+                        yield return new WaitForSeconds(.75f);
+                        CardsFight(EnemyFieldCards[i], PlayerFieldCards[i]);
                     }
                     else
                     {
+                        EnemyFieldCards[i].GetComponent<CardMovementScr>().MoveToTarget(PlayerH.transform);
+                        yield return new WaitForSeconds(.75f);
                         DamageHero(EnemyFieldCards[i], PlayerH);
                     }
                 }
-                
-                
-                
             }
             foreach(var card in EnemyFieldCards)
+            {
+                if(card.SelfCard.TimeCounters > 0)
+                {
+                    card.SelfCard.TimeCounters--;
+                    yield return new WaitForSeconds(.75f);
+                }
+                card.RefreshData();
+            }
+            DestroyCards(PlayerFieldCards);
+            ResultTxt.text = CheckForResults();
+            if(ResultTxt.text == "")
+            {
+                GameManager.ChangeTurn();
+            }
+    }
+
+    public IEnumerator PlayerTurn(List<CardInfoScr> cards)
+    {
+        yield return new WaitForSeconds(.75f);
+        for(int i = 0; i < PlayerFieldCards.Count; i++)
+        {   
+                if(PlayerFieldCards[i].SelfCard.TimeCounters == 0)
+                {
+                    if(EnemyFieldCards.ElementAtOrDefault(i) != null)
+                    {
+                        PlayerFieldCards[i].GetComponent<CardMovementScr>().MoveToTarget(EnemyFieldCards[i].transform);
+                        yield return new WaitForSeconds(.75f);
+                        CardsFight(PlayerFieldCards[i], EnemyFieldCards[i]);
+                    }
+                    else
+                    {
+                        PlayerFieldCards[i].GetComponent<CardMovementScr>().MoveToTarget(EnemyH.transform);
+                        yield return new WaitForSeconds(.75f);
+                        DamageHero(PlayerFieldCards[i], EnemyH);
+                    }
+                }
+                
+        }
+                
+            foreach(var card in PlayerFieldCards)
             {
                 if(card.SelfCard.TimeCounters > 0)
                 {
@@ -140,24 +209,25 @@ public class GameManagerScr : MonoBehaviour
                 }
                 card.RefreshData();
             }
-            DestroyCards(PlayerFieldCards);
-        
-        GameManager.ChangeTurn();
+            DestroyCards(EnemyFieldCards);
+        ResultTxt.text = CheckForResults();
+        if(ResultTxt.text == "")
+        {
+            GameManager.ChangeTurn();
+        }     
     }
 
     public void ChangeTurn()
     {
         Turn++;
-
+        // StopAllCoroutines();
         if(IsPlayerTurn)
         {
-            GiveCardToHand(CurrentGame.EnemyDeck, EnemyHand);
             GiveCardToHand(CurrentGame.PlayerDeck, PlayerHand);
-            
             DestroyCards(EnemyFieldCards);
         }
         else{
-            // EnemyTurn(EnemyHandCards);
+            GiveCardToHand(CurrentGame.EnemyDeck, EnemyHand);
             StartCoroutine(EnemyTurn(EnemyHandCards));
         }
     }
@@ -172,14 +242,14 @@ public class GameManagerScr : MonoBehaviour
     {
         for(int i = 0; i < cards.Count; i++)
         {
-            if(!cards[i].SelfCard.IsAlive)
+            if(!(cards[i].SelfCard.IsAlive))
             {
                 // if(cards.Exists(x -> x == this))
                 // {
-                //     cards.Remove(this);
+                //     cards[i].Remove(this);
                 // }
                 Destroy(cards[i].gameObject);
-                //cards.Remove(cards[i]); 
+                cards.Remove(cards[i]); 
             }
         }
     }
@@ -188,7 +258,7 @@ public class GameManagerScr : MonoBehaviour
     {
         hero.HeroHp = Mathf.Clamp(hero.HeroHp - card.SelfCard.Attack, 0, int.MaxValue);
         ShowHP();
-        CheckForResults();
+        // ResultTxt.text = CheckForResults();
     }
 
     void ShowHP()
@@ -197,17 +267,20 @@ public class GameManagerScr : MonoBehaviour
         PlayerHPTxt.text = PlayerH.HeroHp.ToString();
     }
 
-    void CheckForResults()
+    string CheckForResults()
     {
         if(PlayerH.HeroHp == 0)
         {
             WinScreen.SetActive(true);
-            ResultTxt.text = "You lose";
+            return "You lose";
         }
         else if(EnemyH.HeroHp == 0)
         {
             WinScreen.SetActive(true);
-            ResultTxt.text = "You win";
+            return "You win";
+        }
+        else{
+            return "";
         }
     }
 

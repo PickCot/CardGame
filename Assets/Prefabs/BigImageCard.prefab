@@ -700,6 +700,7 @@ GameObject:
   - component: {fileID: 5184810194982561491}
   - component: {fileID: 270228509806161784}
   - component: {fileID: 8001687019232282314}
+  - component: {fileID: 5524137195724006124}
   m_Layer: 5
   m_Name: BigImageCard
   m_TagString: Untagged
@@ -804,6 +805,7 @@ MonoBehaviour:
   DefaultTempCardParent: {fileID: 0}
   GameManager: {fileID: 0}
   IsDraggable: 0
+  anim: {fileID: 5524137195724006124}
 --- !u!225 &8001687019232282314
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -816,3 +818,19 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!111 &5524137195724006124
+Animation:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6529474453660716862}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Animation: {fileID: 7400000, guid: 8cc85a6bc0e32b9418223e317d4e4840, type: 2}
+  m_Animations:
+  - {fileID: 7400000, guid: 8cc85a6bc0e32b9418223e317d4e4840, type: 2}
+  m_WrapMode: 0
+  m_PlayAutomatically: 1
+  m_AnimatePhysics: 0
+  m_CullingType: 0
