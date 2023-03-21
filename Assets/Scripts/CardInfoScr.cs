@@ -7,9 +7,15 @@ using TMPro;
 public class CardInfoScr : MonoBehaviour
 {
     public Card SelfCard;
+    //public CardController CC;
     public Image Logo;
     public TextMeshProUGUI Name, Attack, HP, TimeCounters;
     public GameObject HideObj;
+
+    public CardInfoScr(Card card)
+    {
+        SelfCard = card;
+    }
 
     public void HideCardInfo(Card card)
     {
@@ -26,9 +32,7 @@ public class CardInfoScr : MonoBehaviour
         Logo.sprite = card.Logo;
         Logo.preserveAspect = true;
         Name.text = card.Name;
-        Attack.text = SelfCard.Attack.ToString();
-        HP.text = SelfCard.HP.ToString();
-        TimeCounters.text = SelfCard.TimeCounters.ToString(); //
+        RefreshData();
     }
     
     public void RefreshData()

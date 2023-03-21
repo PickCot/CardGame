@@ -29,6 +29,7 @@ public class DropPlaceScript : MonoBehaviour, IDropHandler
             card.GameManager.PlayerHandCards.Remove(card.GetComponent<CardInfoScr>());
             card.GameManager.PlayerFieldCards.Add(card.GetComponent<CardInfoScr>());
             card.DefaultParent = transform;
+            // card.OnCast();
             
         }
        

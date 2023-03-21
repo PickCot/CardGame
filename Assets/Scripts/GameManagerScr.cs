@@ -16,17 +16,39 @@ public class Game
 
     List<Card> GiveDeckCard()
     {
-        List<Card> list = new List<Card>();
-        for(int i = 0; i < 10; i++){
-            list.Add(CardManager.AllCards[Random.Range(0, CardManager.AllCards.Count)]);
+        List<Card> list = new List<Card>{
+            new SwormSummoner("SwormSummoner", "Sprites/Cards/SwormSummoner", 1, 2, 1),
+            new SomeCard("spirit", "Sprites/Cards/spirit", 1, 2, 0),
+            new Archer("archer", "Sprites/Cards/archer", 1, 3, 1),
+            new SomeCard("spirit", "Sprites/Cards/berserker", 3, 4, 2),
+            new Druid("druid", "Sprites/Cards/druid", 1, 2, 0),
+            new SomeCard("spirit", "Sprites/Cards/spirit", 1, 2, 0),
+            new Archer("archer", "Sprites/Cards/archer", 1, 3, 1),
+            new SomeCard("spirit", "Sprites/Cards/berserker", 3, 4, 2),
+            new Druid("druid", "Sprites/Cards/druid", 1, 2, 0),
+            // new SwormSummoner("SwormSummoner", "Sprites/Cards/SwormSummoner", 1, 2, 1)
 
-        }
+
+            // new Card("archer", "Sprites/Cards/archer_1", 2, 3, 1),
+            // new Card("berserker", "Sprites/Cards/berserker_1", 3, 4, 2),
+            // new Card("spirit", "Sprites/Cards/spirit_1", 1, 2, 0),
+            // new Card("archer", "Sprites/Cards/archer_1", 2, 3, 1),
+            // new Card("berserker", "Sprites/Cards/berserker_1", 3, 4, 2),
+            // new Card("spirit", "Sprites/Cards/spirit_1", 1, 2, 0),
+            // new Card("archer", "Sprites/Cards/archer_1", 2, 3, 1),
+            // new Card("berserker", "Sprites/Cards/berserker_1", 3, 4, 2)
+        };
+        // for(int i = 0; i < 10; i++){
+        //     list.Add(CardManager.AllCards[Random.Range(0, CardManager.AllCards.Count)]);
+
+        // }
         return list;
     }
 }
 
 public class GameManagerScr : MonoBehaviour
 {
+    //public static GameManagerScr Instance;
     public Game CurrentGame;
     public Transform EnemyHand, PlayerHand, EnemyField, PlayerField;
     public GameObject CardPref;
@@ -55,6 +77,10 @@ public class GameManagerScr : MonoBehaviour
     {
         //anim = GetComponent<Animation>(); //
         GameManager = FindObjectOfType<GameManagerScr>();
+        // if(Instance == null)
+        // {
+        //     Instance = this;
+        // }
     }
 
     void Start()
@@ -110,6 +136,7 @@ public class GameManagerScr : MonoBehaviour
         if(deck.Count == 0)
             return;
         
+        //CreateCardPref(deck[0], hand);
         Card card = deck[0];
         GameObject cardGO = Instantiate(CardPref, hand, false);
 
@@ -137,9 +164,13 @@ public class GameManagerScr : MonoBehaviour
 
             cards[0].ShowCardInfo(cards[0].SelfCard);
             cards[0].transform.SetParent(EnemyField);
+            //cards[0].transform.SetAsLastSibling();
 
             EnemyFieldCards.Add(cards[0]);
             EnemyHandCards.Remove(cards[0]);
+
+            EnemyFieldCards[EnemyFieldCards.Count - 1].SelfCard.EnterTheBattlefield(EnemyFieldCards, EnemyField);
+
             yield return new WaitForSeconds(.50f);
         }
             for(int i = 0; i < EnemyFieldCards.Count; i++)
@@ -149,6 +180,7 @@ public class GameManagerScr : MonoBehaviour
 
                     if(PlayerFieldCards.ElementAtOrDefault(i) != null)
                     {
+                        EnemyFieldCards[i].SelfCard.OnAttack(PlayerFieldCards);
                         EnemyFieldCards[i].GetComponent<CardMovementScr>().MoveToTarget(PlayerFieldCards[i].transform);
                         yield return new WaitForSeconds(.75f);
                         CardsFight(EnemyFieldCards[i], PlayerFieldCards[i]);
@@ -178,8 +210,11 @@ public class GameManagerScr : MonoBehaviour
             }
     }
 
-    public IEnumerator PlayerTurn(List<CardInfoScr> cards)
+    public IEnumerator PlayerTurn()
     {
+        //Debug.Log(PlayerFieldCards.IndexOf(PlayerFieldCards[PlayerFieldCards.Count - 1]) + " Last element");
+        PlayerFieldCards[PlayerFieldCards.Count - 1].SelfCard.EnterTheBattlefield(PlayerFieldCards, PlayerField);
+        //Debug.Log(PlayerFieldCards.IndexOf(PlayerFieldCards[PlayerFieldCards.Count - 1]) + " Last element");
         yield return new WaitForSeconds(.75f);
         for(int i = 0; i < PlayerFieldCards.Count; i++)
         {   
@@ -187,6 +222,7 @@ public class GameManagerScr : MonoBehaviour
                 {
                     if(EnemyFieldCards.ElementAtOrDefault(i) != null)
                     {
+                        PlayerFieldCards[i].SelfCard.OnAttack(EnemyFieldCards);
                         PlayerFieldCards[i].GetComponent<CardMovementScr>().MoveToTarget(EnemyFieldCards[i].transform);
                         yield return new WaitForSeconds(.75f);
                         CardsFight(PlayerFieldCards[i], EnemyFieldCards[i]);
@@ -284,4 +320,18 @@ public class GameManagerScr : MonoBehaviour
         }
     }
 
+    // void CreateCardPref(Card card, Transform hand)
+    // {
+    //     GameObject cardGO = Instantiate(CardPref, hand, false);
+    //     CardController cardC = cardGO.GetComponent<CardController>();
+
+    //     cardC.Init(card, hand == PlayerHand);
+    //     if(cardC.IsPlayerCard)
+    //     {
+    //         PlayerHandCards.Add(cardC);
+    //     }
+    //     else{
+    //         EnemyHandCards.Add(cardC);
+    //     }
+    // }
 }

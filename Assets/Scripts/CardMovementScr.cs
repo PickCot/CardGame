@@ -12,6 +12,7 @@ public class CardMovementScr : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     public Transform DefaultParent, DefaultTempCardParent;
     public GameManagerScr GameManager;
     public bool IsDraggable;
+    // CardController CC;
     
     void Awake()
     {
@@ -50,7 +51,7 @@ public class CardMovementScr : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         }
         if(DefaultParent.GetComponent<DropPlaceScript>().Type == FieldType.SELF_FIELD)
         {
-            StartCoroutine(GameManager.PlayerTurn(GameManager.PlayerHandCards)); 
+            StartCoroutine(GameManager.PlayerTurn()); 
         //     for(int i = 0; i < GameManager.PlayerFieldCards.Count; i++)
         //     {   
         //         if(GameManager.PlayerFieldCards[i].SelfCard.TimeCounters == 0)
@@ -89,13 +90,13 @@ public class CardMovementScr : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     public void MoveToField(Transform field)
     {
-        //transform.SetParent(GameObject.Find("Canvas").transform);
+        transform.SetParent(GameObject.Find("Canvas").transform);
         transform.DOMove(field.position, .5f);
     }
 
     public void MoveToTarget(Transform target)
     {
-        //transform.SetParent(GameObject.Find("Canvas").transform);
+        // transform.SetParent(GameObject.Find("Canvas").transform);
         StartCoroutine(MoveToTargetCor(target));
     }
 
